@@ -20,7 +20,7 @@ Restore all project dependencies:
 ```sh
 dotnet restore
 ```
-Replace `[ENDPOINT]`, `[PROJECT_ID]` and `[API_KEY]` with your credentials in the *Program.cs*.
+Replace `[ENDPOINT]`, `[PROJECT_ID]` and `[API_KEY]` with your credentials in *Program.cs*.
 
 To run your Playground, run following command:
 
