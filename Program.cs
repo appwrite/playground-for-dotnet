@@ -151,6 +151,27 @@ namespace playground_for_dotnet
                 Console.WriteLine($"Error: {e}");
                 throw;
             }
+
+            /**
+                List Functions
+            */
+            Functions functions = new Functions(client);
+    
+            try
+            {
+                Console.WriteLine("Running List Functions API");
+                response = RunTask(functions.List()).GetAwaiter().GetResult();
+                parsed = JObject.Parse(response);
+                foreach (dynamic element in parsed["functions"])
+                {
+                    Console.WriteLine($"- {element["name"]} ({element["env"]})");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine($"Error: {e}");
+                throw;
+            }
         }
 
         static async Task<string> RunTask(Task<HttpResponseMessage> task) 
