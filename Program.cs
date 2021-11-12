@@ -1,28 +1,31 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Appwrite;
+using Appwrite.Models;
 
-namespace playground_for_dotnet
+namespace PlaygroundForDotNet
 {
     class Program
     {
-        static void Main(string[] args)
+        const string Endpoint = "http://localhost/v1";
+        const string Key = "32b273c69d6f36fb7bd3b273150876966ade2721becbdf7b913a629664b4b176d79e06187d10a9e068ae018d720d991f99d22e3a29adfca30a220d233f6e412b773ccbe3aaaa4960a2382785a74406629a685367c37325dc016797ae73d68345caedfca10bbd8acd319e411f4cc0757b9c489a3e552c40443378349c4eeb1136";
+        const string ProjectId = "618dd805ca196";
+
+
+        static async Task Main(string[] args)
         {
-            Client client = new Client();
-            client.SetEndPoint("[ENDPOINT]");
-            client.SetProject("[PROJECT_ID]");
-            client.SetKey("[API_KEY]");
-            client.SetSelfSigned(true);
+            var client = new Client()
+                .SetEndPoint(Endpoint)
+                .SetProject(ProjectId)
+                .SetKey(Key)
+                .SetSelfSigned(true);
 
-            string response;
-            string collection;
-            JObject parsed;
+            var database = new Database(client);
+            var users = new Users(client);
+            var functions = new Functions(client);
 
-            Database database = new Database(client);
-            Users users = new Users(client);
+            string collectionId;
 
             /**
                 Create User
@@ -30,29 +33,28 @@ namespace playground_for_dotnet
             try
             {
                 Console.WriteLine("Running Create Users API");
-                RunTask(users.Create($"{DateTime.Now.ToFileTime()}@example.com", "*******", "Lorem Ipsum")).GetAwaiter().GetResult();
+                var user = await users.Create($"{DateTime.Now.ToFileTime()}@example.com", "*******", "Lorem Ipsum");
                 Console.WriteLine("Done");
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine($"Error: {e}");
                 throw;
             }
 
             /**
-                List Documents
+                List Users
             */
             try
             {
                 Console.WriteLine("Running List Documents API");
-                response = RunTask(users.List()).GetAwaiter().GetResult();
-                parsed = JObject.Parse(response);
-                foreach (dynamic element in parsed["users"])
+                var userList = await users.List();
+                foreach (var user in userList.Users)
                 {
-                    Console.WriteLine($"- {element["name"]} ({element["email"]})");
+                    Console.WriteLine($"- {user.Name} ({user.Email})");
                 }
             }
-            catch (System.Exception e)
+            catch (AppwriteException e)
             {
                 Console.WriteLine($"Error: {e}");
                 throw;
@@ -61,36 +63,43 @@ namespace playground_for_dotnet
             /**
                 Create Collection
             */
-            List<object> perms = new List<object>() {"*"};
-            List<object> rules = new List<object>();
+            var perms = new List<object>() {"*"};
+            var rules = new List<object>();
 
-            Rule ruleName = new Rule();
-            ruleName.Label = "Name";
-            ruleName.Key = "name";
-            ruleName.Type = "text";
-            ruleName.Default = "Empty Name";
-            ruleName.Required = true;
-            ruleName.Array = false;
-            rules.Add(ruleName);
+            var nameRule = new Rule(
+                id: "",
+                collection: "",
+                type: "text",
+                key: "name",
+                label: "Name",
+                xdefault: "Empty Name",
+                required: true,
+                array: false,
+                list: null);
 
-            Rule ruleYear = new Rule();
-            ruleYear.Label = "Release Year";
-            ruleYear.Key = "release_year";
-            ruleYear.Type = "numeric";
-            ruleYear.Default = "1970";
-            ruleYear.Required = true;
-            ruleYear.Array = false;
-            rules.Add(ruleYear);
+            rules.Add(nameRule);
+
+            var yearRule = new Rule(
+                id: "",
+                collection: "",
+                type: "text",
+                key: "release_year",
+                label: "Release Year",
+                xdefault: "1970",
+                required: true,
+                array: false,
+                list: null);
+
+            rules.Add(yearRule);
 
             try
             {
                 Console.WriteLine("Running Create Collection API");
-                response = RunTask(database.CreateCollection("Movies", perms, perms, rules)).GetAwaiter().GetResult();
-                parsed = JObject.Parse(response);
-                collection = (string) parsed["$id"];
+                var collection = await database.CreateCollection("Movies", perms, perms, rules);
+                collectionId = collection.Id;
                 Console.WriteLine("Done");
             }
-            catch (System.Exception e)
+            catch (AppwriteException e)
             {
                 Console.WriteLine($"Error: {e}");
                 throw;
@@ -102,14 +111,14 @@ namespace playground_for_dotnet
             try
             {
                 Console.WriteLine("Running List Collection API");
-                response = RunTask(database.ListCollections()).GetAwaiter().GetResult();
-                parsed = JObject.Parse(response);
-                foreach (dynamic element in parsed["collections"])
+                var collectionList = await database.ListCollections();
+                
+                foreach (var collection in collectionList.Collections)
                 {
-                    Console.WriteLine($"- {element["name"]}");
+                    Console.WriteLine($"- {collection.Name}");
                 }
             }
-            catch (System.Exception e)
+            catch (AppwriteException e)
             {
                 Console.WriteLine($"Error: {e}");
                 throw;
@@ -118,16 +127,22 @@ namespace playground_for_dotnet
             /**
                 Add Document
             */
-            Movie movie1 = new Movie("Alien", 1979);
-            Movie movie2 = new Movie("Equilibrium", 2002);
+            var movie1 = new Movie(
+                name: "Alien",
+                releaseYear: 1979);
+
+            var movie2 = new Movie(
+                name: "Equilibrium",
+                releaseYear: 2002);
+
             try
             {
                 Console.WriteLine("Running Create Documents API");
-                RunTask(database.CreateDocument(collection, movie1, perms, perms)).GetAwaiter().GetResult();
-                RunTask(database.CreateDocument(collection, movie2, perms, perms)).GetAwaiter().GetResult();
+                await database.CreateDocument(collectionId, movie1, perms, perms);
+                await database.CreateDocument(collectionId, movie2, perms, perms);
                 Console.WriteLine("Done");
             }
-            catch (System.Exception e)
+            catch (AppwriteException e)
             {
                 Console.WriteLine($"Error: {e}");
                 throw;
@@ -139,14 +154,13 @@ namespace playground_for_dotnet
             try
             {
                 Console.WriteLine("Running List Documents API");
-                response = RunTask(database.ListDocuments(collection)).GetAwaiter().GetResult();
-                parsed = JObject.Parse(response);
-                foreach (dynamic element in parsed["documents"])
+                var documentList = await database.ListDocuments(collectionId);
+                foreach (var document in documentList.Documents)
                 {
-                    Console.WriteLine($"- {element["name"]} ({element["release_year"]})");
+                    Console.WriteLine($"- {document.Data["name"]} ({document.Data["release_year"]})");
                 }
             }
-            catch (System.Exception e)
+            catch (AppwriteException e)
             {
                 Console.WriteLine($"Error: {e}");
                 throw;
@@ -155,39 +169,33 @@ namespace playground_for_dotnet
             /**
                 List Functions
             */
-            Functions functions = new Functions(client);
-    
             try
             {
                 Console.WriteLine("Running List Functions API");
-                response = RunTask(functions.List()).GetAwaiter().GetResult();
-                parsed = JObject.Parse(response);
-                foreach (dynamic element in parsed["functions"])
+                var functionList = await functions.List();
+                
+                foreach (var function in functionList.Functions)
                 {
-                    Console.WriteLine($"- {element["name"]} ({element["env"]})");
+                    Console.WriteLine($"- {function.Name} ({function.Runtime})");
                 }
             }
-            catch (System.Exception e)
+            catch (AppwriteException e)
             {
                 Console.WriteLine($"Error: {e}");
                 throw;
             }
         }
-
-        static async Task<string> RunTask(Task<HttpResponseMessage> task) 
-        {
-            HttpResponseMessage response = await task;
-            return await response.Content.ReadAsStringAsync();
-        }
     }
-    public class Movie {
+
+    public class Movie
+    {
+        public string Name { get; }
+        public int ReleaseYear { get; }
+
         public Movie(string name, int releaseYear)
         {
             Name = name;
-            release_year = releaseYear;
+            ReleaseYear = releaseYear;
         }
-        public string Name { get; }
-        public int release_year { get; }
-
     }
 }
