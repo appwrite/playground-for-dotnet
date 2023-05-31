@@ -53,6 +53,26 @@ namespace playground_for_dotnet
                     name: "Movies",
                     permissions: new List<string> { Permission.Read(Role.Any()), Permission.Write(Role.Any()) }
                 );
+
+                Console.WriteLine("Creating Attribute \"name\"");
+
+                await databases.CreateStringAttribute(
+                    databaseId: database.Id,
+                    collectionId: collection.Id,
+                    key: "name",
+                    size: 255,
+                    required: true
+                );
+
+                Console.WriteLine("Creating Attribute \"release_year\"");
+
+                await databases.CreateIntegerAttribute(
+                    databaseId: database.Id,
+                    collectionId: collection.Id,
+                    key: "release_year",
+                    required: true
+                );
+
                 Console.WriteLine("Done");
             }
             catch (Exception e)
