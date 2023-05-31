@@ -1,58 +1,40 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Appwrite;
+using Appwrite.Services;
+using Appwrite.Models;
+using Newtonsoft.Json;
 
 namespace playground_for_dotnet
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             Client client = new Client();
-            client.SetEndPoint("[ENDPOINT]");
+            client.SetEndpoint("[ENDPOINT]");
             client.SetProject("[PROJECT_ID]");
             client.SetKey("[API_KEY]");
-            client.SetSelfSigned(true);
 
-            string response;
-            string collection;
-            JObject parsed;
+            Databases databases = new Databases(client);
 
-            Database database = new Database(client);
-            Users users = new Users(client);
+            Database database;
+            Collection collection;
 
             /**
-                Create User
+                Create Database
             */
             try
             {
-                Console.WriteLine("Running Create Users API");
-                RunTask(users.Create($"{DateTime.Now.ToFileTime()}@example.com", "*******", "Lorem Ipsum")).GetAwaiter().GetResult();
+                Console.WriteLine("Running Create Database API");
+                database = await databases.Create(
+                    databaseId: ID.Unique(),
+                    name: "MoviesDB"
+                );
                 Console.WriteLine("Done");
             }
-            catch (System.Exception e)
-            {
-                Console.WriteLine($"Error: {e}");
-                throw;
-            }
-
-            /**
-                List Documents
-            */
-            try
-            {
-                Console.WriteLine("Running List Documents API");
-                response = RunTask(users.List()).GetAwaiter().GetResult();
-                parsed = JObject.Parse(response);
-                foreach (dynamic element in parsed["users"])
-                {
-                    Console.WriteLine($"- {element["name"]} ({element["email"]})");
-                }
-            }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine($"Error: {e}");
                 throw;
@@ -61,55 +43,39 @@ namespace playground_for_dotnet
             /**
                 Create Collection
             */
-            List<object> perms = new List<object>() {"*"};
-            List<object> rules = new List<object>();
-
-            Rule ruleName = new Rule();
-            ruleName.Label = "Name";
-            ruleName.Key = "name";
-            ruleName.Type = "text";
-            ruleName.Default = "Empty Name";
-            ruleName.Required = true;
-            ruleName.Array = false;
-            rules.Add(ruleName);
-
-            Rule ruleYear = new Rule();
-            ruleYear.Label = "Release Year";
-            ruleYear.Key = "release_year";
-            ruleYear.Type = "numeric";
-            ruleYear.Default = "1970";
-            ruleYear.Required = true;
-            ruleYear.Array = false;
-            rules.Add(ruleYear);
 
             try
             {
                 Console.WriteLine("Running Create Collection API");
-                response = RunTask(database.CreateCollection("Movies", perms, perms, rules)).GetAwaiter().GetResult();
-                parsed = JObject.Parse(response);
-                collection = (string) parsed["$id"];
+                collection = await databases.CreateCollection(
+                    databaseId: database.Id,
+                    collectionId: ID.Unique(),
+                    name: "Movies",
+                    permissions: new List<string> { Permission.Read(Role.Any()), Permission.Write(Role.Any()) }
+                );
                 Console.WriteLine("Done");
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine($"Error: {e}");
                 throw;
             }
 
             /**
-                List Collection
+                List Collections
             */
             try
             {
                 Console.WriteLine("Running List Collection API");
-                response = RunTask(database.ListCollections()).GetAwaiter().GetResult();
-                parsed = JObject.Parse(response);
-                foreach (dynamic element in parsed["collections"])
+                var collectionsList = await databases.ListCollections(
+                    databaseId: database.Id
+                );
+                foreach (var element in collectionsList.Collections)
                 {
-                    Console.WriteLine($"- {element["name"]}");
+                    Console.WriteLine($"- {element.Name}");
                 }
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine($"Error: {e}");
                 throw;
@@ -123,11 +89,21 @@ namespace playground_for_dotnet
             try
             {
                 Console.WriteLine("Running Create Documents API");
-                RunTask(database.CreateDocument(collection, movie1, perms, perms)).GetAwaiter().GetResult();
-                RunTask(database.CreateDocument(collection, movie2, perms, perms)).GetAwaiter().GetResult();
+                await databases.CreateDocument(
+                    databaseId: database.Id,
+                    collectionId: collection.Id,
+                    documentId: ID.Unique(),
+                    data: movie1
+                );
+                await databases.CreateDocument(
+                    databaseId: database.Id,
+                    collectionId: collection.Id,
+                    documentId: ID.Unique(),
+                    data: movie2
+                );
                 Console.WriteLine("Done");
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine($"Error: {e}");
                 throw;
@@ -139,48 +115,25 @@ namespace playground_for_dotnet
             try
             {
                 Console.WriteLine("Running List Documents API");
-                response = RunTask(database.ListDocuments(collection)).GetAwaiter().GetResult();
-                parsed = JObject.Parse(response);
-                foreach (dynamic element in parsed["documents"])
+                var documentsList = await databases.ListDocuments(
+                    databaseId: database.Id,
+                    collectionId: collection.Id
+                );
+                foreach (var element in documentsList.Documents)
                 {
-                    Console.WriteLine($"- {element["name"]} ({element["release_year"]})");
+                    var movie = JsonConvert.DeserializeObject<Movie>(JsonConvert.SerializeObject(element));
+                    Console.WriteLine($"- {movie.Name} ({movie.release_year})");
                 }
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine($"Error: {e}");
                 throw;
             }
-
-            /**
-                List Functions
-            */
-            Functions functions = new Functions(client);
-    
-            try
-            {
-                Console.WriteLine("Running List Functions API");
-                response = RunTask(functions.List()).GetAwaiter().GetResult();
-                parsed = JObject.Parse(response);
-                foreach (dynamic element in parsed["functions"])
-                {
-                    Console.WriteLine($"- {element["name"]} ({element["env"]})");
-                }
-            }
-            catch (System.Exception e)
-            {
-                Console.WriteLine($"Error: {e}");
-                throw;
-            }
-        }
-
-        static async Task<string> RunTask(Task<HttpResponseMessage> task) 
-        {
-            HttpResponseMessage response = await task;
-            return await response.Content.ReadAsStringAsync();
         }
     }
-    public class Movie {
+    public class Movie
+    {
         public Movie(string name, int releaseYear)
         {
             Name = name;
