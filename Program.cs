@@ -22,6 +22,10 @@ namespace playground_for_dotnet
             Database database;
             Collection collection;
 
+            Storage storage = new Storage(client);
+
+            Bucket bucket;
+
             /**
                 Create Database
             */
@@ -144,6 +148,51 @@ namespace playground_for_dotnet
                     var movie = JsonConvert.DeserializeObject<Movie>(JsonConvert.SerializeObject(element));
                     Console.WriteLine($"- {movie.Name} ({movie.release_year})");
                 }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error: {e}");
+                throw;
+            }
+
+            /**
+                Create Bucket
+            */
+
+            try
+            {
+                Console.WriteLine("Running Create Bucket API");
+
+                bucket = await storage.CreateBucket(
+                    bucketId: ID.Unique(),
+                    name: "Files",
+                    permissions: new List<string> { Permission.Read(Role.Any()), Permission.Write(Role.Any()) }
+                );
+
+                Console.WriteLine("Done");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error: {e}");
+                throw;
+            }
+
+            /**
+                Create File
+            */
+
+            try
+            {
+                Console.WriteLine("Running Create File API");
+
+                var file = await storage.CreateFile(
+                    bucketId: bucket.Id,
+                    fileId: ID.Unique(),
+                    file: InputFile.FromPath("[DIRECTORY_PATH]/appwrite-overview.png"),
+                    permissions: new List<string> { Permission.Read(Role.Any()), Permission.Write(Role.Any()) }
+                );
+
+                Console.WriteLine("Done");
             }
             catch (Exception e)
             {
