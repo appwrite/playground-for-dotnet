@@ -145,8 +145,8 @@ namespace playground_for_dotnet
                 );
                 foreach (var element in documentsList.Documents)
                 {
-                    var movie = JsonConvert.DeserializeObject<Movie>(JsonConvert.SerializeObject(element));
-                    Console.WriteLine($"- {movie.Name} ({movie.release_year})");
+                    var movie = JsonConvert.DeserializeObject<Movie>(JsonConvert.SerializeObject(element.Data));
+                    Console.WriteLine($"- {movie.Name} ({movie.ReleaseYear})");
                 }
             }
             catch (Exception e)
@@ -251,10 +251,12 @@ namespace playground_for_dotnet
         public Movie(string name, int releaseYear)
         {
             Name = name;
-            release_year = releaseYear;
+            ReleaseYear = releaseYear;
         }
+        [JsonProperty("name")]
         public string Name { get; }
-        public int release_year { get; }
+        [JsonProperty("release_year")]
+        public int ReleaseYear { get; }
 
     }
 }
