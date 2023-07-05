@@ -16,14 +16,14 @@ namespace playground_for_dotnet
             client.SetEndpoint("[ENDPOINT]");
             client.SetProject("[PROJECT_ID]");
             client.SetKey("[API_KEY]");
-
+            
             Databases databases = new Databases(client);
+            Storage storage = new Storage(client);
+            Functions functions = new Functions(client);
+            Users users = new Users(client);
 
             Database database;
             Collection collection;
-
-            Storage storage = new Storage(client);
-
             Bucket bucket;
 
             /**
@@ -132,7 +132,7 @@ namespace playground_for_dotnet
                 Console.WriteLine($"Error: {e}");
                 throw;
             }
-
+            
             /**
                 List Documents
             */
@@ -190,6 +190,51 @@ namespace playground_for_dotnet
                     fileId: ID.Unique(),
                     file: InputFile.FromPath("[DIRECTORY_PATH]/appwrite-overview.png"),
                     permissions: new List<string> { Permission.Read(Role.Any()), Permission.Write(Role.Any()) }
+                );
+
+                Console.WriteLine("Done");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error: {e}");
+                throw;
+            }
+
+            /**
+                Create Function Execution
+            */
+
+            try
+            {
+                Console.WriteLine("Running Create Function Execution API");
+
+                var execution = await functions.CreateExecution(
+                    functionId: "[FUNCTION_ID]"
+                );
+
+                Console.WriteLine($"Response Message: {execution.Response}");
+
+                Console.WriteLine("Done");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error: {e}");
+                throw;
+            }
+
+            /**
+                Create User
+            */
+
+            try
+            {
+                Console.WriteLine("Running Create User API");
+
+                var user = await users.Create(
+                    userId: ID.Unique(),
+                    email: "test@example.com",
+                    password: "test12345",
+                    name: "Walter O' Brian"
                 );
 
                 Console.WriteLine("Done");
