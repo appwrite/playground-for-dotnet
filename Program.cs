@@ -1,117 +1,107 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Appwrite;
+using Appwrite.Services;
+using Appwrite.Models;
+using Newtonsoft.Json;
 
 namespace playground_for_dotnet
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             Client client = new Client();
-            client.SetEndPoint("[ENDPOINT]");
+            client.SetEndpoint("[ENDPOINT]");
             client.SetProject("[PROJECT_ID]");
             client.SetKey("[API_KEY]");
-            client.SetSelfSigned(true);
 
-            string response;
-            string collection;
-            JObject parsed;
-
-            Database database = new Database(client);
+            Databases databases = new Databases(client);
+            Storage storage = new Storage(client);
+            Functions functions = new Functions(client);
             Users users = new Users(client);
 
-            /**
-                Create User
-            */
-            try
-            {
-                Console.WriteLine("Running Create Users API");
-                RunTask(users.Create($"{DateTime.Now.ToFileTime()}@example.com", "*******", "Lorem Ipsum")).GetAwaiter().GetResult();
-                Console.WriteLine("Done");
-            }
-            catch (System.Exception e)
-            {
-                Console.WriteLine($"Error: {e}");
-                throw;
-            }
+            Database database;
+            Collection collection;
+            Bucket bucket;
 
             /**
-                List Documents
+                Create Database
             */
             try
             {
-                Console.WriteLine("Running List Documents API");
-                response = RunTask(users.List()).GetAwaiter().GetResult();
-                parsed = JObject.Parse(response);
-                foreach (dynamic element in parsed["users"])
-                {
-                    Console.WriteLine($"- {element["name"]} ({element["email"]})");
-                }
+                Console.WriteLine("Running Create Database API");
+                database = await databases.Create(
+                    databaseId: ID.Unique(),
+                    name: "MoviesDB"
+                );
+                Console.WriteLine("Done");
             }
-            catch (System.Exception e)
+            catch (AppwriteException e)
             {
-                Console.WriteLine($"Error: {e}");
+                Console.WriteLine($"Error: {e.Message}");
                 throw;
             }
 
             /**
                 Create Collection
             */
-            List<object> perms = new List<object>() {"*"};
-            List<object> rules = new List<object>();
-
-            Rule ruleName = new Rule();
-            ruleName.Label = "Name";
-            ruleName.Key = "name";
-            ruleName.Type = "text";
-            ruleName.Default = "Empty Name";
-            ruleName.Required = true;
-            ruleName.Array = false;
-            rules.Add(ruleName);
-
-            Rule ruleYear = new Rule();
-            ruleYear.Label = "Release Year";
-            ruleYear.Key = "release_year";
-            ruleYear.Type = "numeric";
-            ruleYear.Default = "1970";
-            ruleYear.Required = true;
-            ruleYear.Array = false;
-            rules.Add(ruleYear);
 
             try
             {
                 Console.WriteLine("Running Create Collection API");
-                response = RunTask(database.CreateCollection("Movies", perms, perms, rules)).GetAwaiter().GetResult();
-                parsed = JObject.Parse(response);
-                collection = (string) parsed["$id"];
+                collection = await databases.CreateCollection(
+                    databaseId: database.Id,
+                    collectionId: ID.Unique(),
+                    name: "Movies",
+                    permissions: new List<string> { Permission.Read(Role.Any()), Permission.Write(Role.Any()) }
+                );
+
+                Console.WriteLine("Creating Attribute \"name\"");
+
+                await databases.CreateStringAttribute(
+                    databaseId: database.Id,
+                    collectionId: collection.Id,
+                    key: "name",
+                    size: 255,
+                    required: true
+                );
+
+                Console.WriteLine("Creating Attribute \"release_year\"");
+
+                await databases.CreateIntegerAttribute(
+                    databaseId: database.Id,
+                    collectionId: collection.Id,
+                    key: "release_year",
+                    required: true
+                );
+
                 Console.WriteLine("Done");
             }
-            catch (System.Exception e)
+            catch (AppwriteException e)
             {
-                Console.WriteLine($"Error: {e}");
+                Console.WriteLine($"Error: {e.Message}");
                 throw;
             }
 
             /**
-                List Collection
+                List Collections
             */
             try
             {
                 Console.WriteLine("Running List Collection API");
-                response = RunTask(database.ListCollections()).GetAwaiter().GetResult();
-                parsed = JObject.Parse(response);
-                foreach (dynamic element in parsed["collections"])
+                var collectionsList = await databases.ListCollections(
+                    databaseId: database.Id
+                );
+                foreach (var element in collectionsList.Collections)
                 {
-                    Console.WriteLine($"- {element["name"]}");
+                    Console.WriteLine($"- {element.Name}");
                 }
             }
-            catch (System.Exception e)
+            catch (AppwriteException e)
             {
-                Console.WriteLine($"Error: {e}");
+                Console.WriteLine($"Error: {e.Message}");
                 throw;
             }
 
@@ -123,13 +113,23 @@ namespace playground_for_dotnet
             try
             {
                 Console.WriteLine("Running Create Documents API");
-                RunTask(database.CreateDocument(collection, movie1, perms, perms)).GetAwaiter().GetResult();
-                RunTask(database.CreateDocument(collection, movie2, perms, perms)).GetAwaiter().GetResult();
+                await databases.CreateDocument(
+                    databaseId: database.Id,
+                    collectionId: collection.Id,
+                    documentId: ID.Unique(),
+                    data: movie1
+                );
+                await databases.CreateDocument(
+                    databaseId: database.Id,
+                    collectionId: collection.Id,
+                    documentId: ID.Unique(),
+                    data: movie2
+                );
                 Console.WriteLine("Done");
             }
-            catch (System.Exception e)
+            catch (AppwriteException e)
             {
-                Console.WriteLine($"Error: {e}");
+                Console.WriteLine($"Error: {e.Message}");
                 throw;
             }
 
@@ -139,55 +139,124 @@ namespace playground_for_dotnet
             try
             {
                 Console.WriteLine("Running List Documents API");
-                response = RunTask(database.ListDocuments(collection)).GetAwaiter().GetResult();
-                parsed = JObject.Parse(response);
-                foreach (dynamic element in parsed["documents"])
+                var documentsList = await databases.ListDocuments(
+                    databaseId: database.Id,
+                    collectionId: collection.Id
+                );
+                foreach (var element in documentsList.Documents)
                 {
-                    Console.WriteLine($"- {element["name"]} ({element["release_year"]})");
+                    var movie = JsonConvert.DeserializeObject<Movie>(JsonConvert.SerializeObject(element.Data));
+                    Console.WriteLine($"- {movie.Name} ({movie.ReleaseYear})");
                 }
             }
-            catch (System.Exception e)
+            catch (AppwriteException e)
             {
-                Console.WriteLine($"Error: {e}");
+                Console.WriteLine($"Error: {e.Message}");
                 throw;
             }
 
             /**
-                List Functions
+                Create Bucket
             */
-            Functions functions = new Functions(client);
-    
+
             try
             {
-                Console.WriteLine("Running List Functions API");
-                response = RunTask(functions.List()).GetAwaiter().GetResult();
-                parsed = JObject.Parse(response);
-                foreach (dynamic element in parsed["functions"])
-                {
-                    Console.WriteLine($"- {element["name"]} ({element["env"]})");
-                }
+                Console.WriteLine("Running Create Bucket API");
+
+                bucket = await storage.CreateBucket(
+                    bucketId: ID.Unique(),
+                    name: "Files",
+                    permissions: new List<string> { Permission.Read(Role.Any()), Permission.Write(Role.Any()) }
+                );
+
+                Console.WriteLine("Done");
             }
-            catch (System.Exception e)
+            catch (AppwriteException e)
             {
-                Console.WriteLine($"Error: {e}");
+                Console.WriteLine($"Error: {e.Message}");
+                throw;
+            }
+
+            /**
+                Create File
+            */
+
+            try
+            {
+                Console.WriteLine("Running Create File API");
+
+                var file = await storage.CreateFile(
+                    bucketId: bucket.Id,
+                    fileId: ID.Unique(),
+                    file: InputFile.FromPath("[DIRECTORY_PATH]/appwrite-overview.png"),
+                    permissions: new List<string> { Permission.Read(Role.Any()), Permission.Write(Role.Any()) }
+                );
+
+                Console.WriteLine("Done");
+            }
+            catch (AppwriteException e)
+            {
+                Console.WriteLine($"Error: {e.Message}");
+                throw;
+            }
+
+            /**
+                Create Function Execution
+            */
+
+            try
+            {
+                Console.WriteLine("Running Create Function Execution API");
+
+                var execution = await functions.CreateExecution(
+                    functionId: "[FUNCTION_ID]"
+                );
+
+                Console.WriteLine($"Response Message: {execution.Response}");
+
+                Console.WriteLine("Done");
+            }
+            catch (AppwriteException e)
+            {
+                Console.WriteLine($"Error: {e.Message}");
+                throw;
+            }
+
+            /**
+                Create User
+            */
+
+            try
+            {
+                Console.WriteLine("Running Create User API");
+
+                var user = await users.Create(
+                    userId: ID.Unique(),
+                    email: "test@example.com",
+                    password: "test12345",
+                    name: "Walter O' Brian"
+                );
+
+                Console.WriteLine("Done");
+            }
+            catch (AppwriteException e)
+            {
+                Console.WriteLine($"Error: {e.Message}");
                 throw;
             }
         }
-
-        static async Task<string> RunTask(Task<HttpResponseMessage> task) 
-        {
-            HttpResponseMessage response = await task;
-            return await response.Content.ReadAsStringAsync();
-        }
     }
-    public class Movie {
+    public class Movie
+    {
         public Movie(string name, int releaseYear)
         {
             Name = name;
-            release_year = releaseYear;
+            ReleaseYear = releaseYear;
         }
+        [JsonProperty("name")]
         public string Name { get; }
-        public int release_year { get; }
+        [JsonProperty("release_year")]
+        public int ReleaseYear { get; }
 
     }
 }

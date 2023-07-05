@@ -20,7 +20,7 @@ Restore all project dependencies:
 ```sh
 dotnet restore
 ```
-Replace `[ENDPOINT]`, `[PROJECT_ID]` and `[API_KEY]` with your credentials in *Program.cs*.
+Replace `[ENDPOINT]`, `[PROJECT_ID]` and `[API_KEY]` with your credentials, `[FUNCTION_ID]` with the id of any Appwrite function you would like to test and `[DIRECTORY_PATH]` with the path of your project directory in *Program.cs*.
 
 To run your Playground, run following command:
 
