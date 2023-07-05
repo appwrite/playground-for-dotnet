@@ -5,10 +5,7 @@
     <RootNamespace>playground_for_dotnet</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Appwrite" Version="1.0.0-beta01" />
-    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.421302">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
+    <PackageReference Include="Appwrite" Version="0.4.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 </Project>
