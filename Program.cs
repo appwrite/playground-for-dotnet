@@ -16,7 +16,7 @@ namespace playground_for_dotnet
             client.SetEndpoint("[ENDPOINT]");
             client.SetProject("[PROJECT_ID]");
             client.SetKey("[API_KEY]");
-            
+
             Databases databases = new Databases(client);
             Storage storage = new Storage(client);
             Functions functions = new Functions(client);
@@ -38,9 +38,9 @@ namespace playground_for_dotnet
                 );
                 Console.WriteLine("Done");
             }
-            catch (Exception e)
+            catch (AppwriteException e)
             {
-                Console.WriteLine($"Error: {e}");
+                Console.WriteLine($"Error: {e.Message}");
                 throw;
             }
 
@@ -79,9 +79,9 @@ namespace playground_for_dotnet
 
                 Console.WriteLine("Done");
             }
-            catch (Exception e)
+            catch (AppwriteException e)
             {
-                Console.WriteLine($"Error: {e}");
+                Console.WriteLine($"Error: {e.Message}");
                 throw;
             }
 
@@ -99,9 +99,9 @@ namespace playground_for_dotnet
                     Console.WriteLine($"- {element.Name}");
                 }
             }
-            catch (Exception e)
+            catch (AppwriteException e)
             {
-                Console.WriteLine($"Error: {e}");
+                Console.WriteLine($"Error: {e.Message}");
                 throw;
             }
 
@@ -127,12 +127,12 @@ namespace playground_for_dotnet
                 );
                 Console.WriteLine("Done");
             }
-            catch (Exception e)
+            catch (AppwriteException e)
             {
-                Console.WriteLine($"Error: {e}");
+                Console.WriteLine($"Error: {e.Message}");
                 throw;
             }
-            
+
             /**
                 List Documents
             */
@@ -149,9 +149,9 @@ namespace playground_for_dotnet
                     Console.WriteLine($"- {movie.Name} ({movie.ReleaseYear})");
                 }
             }
-            catch (Exception e)
+            catch (AppwriteException e)
             {
-                Console.WriteLine($"Error: {e}");
+                Console.WriteLine($"Error: {e.Message}");
                 throw;
             }
 
@@ -171,9 +171,9 @@ namespace playground_for_dotnet
 
                 Console.WriteLine("Done");
             }
-            catch (Exception e)
+            catch (AppwriteException e)
             {
-                Console.WriteLine($"Error: {e}");
+                Console.WriteLine($"Error: {e.Message}");
                 throw;
             }
 
@@ -194,9 +194,9 @@ namespace playground_for_dotnet
 
                 Console.WriteLine("Done");
             }
-            catch (Exception e)
+            catch (AppwriteException e)
             {
-                Console.WriteLine($"Error: {e}");
+                Console.WriteLine($"Error: {e.Message}");
                 throw;
             }
 
@@ -216,9 +216,9 @@ namespace playground_for_dotnet
 
                 Console.WriteLine("Done");
             }
-            catch (Exception e)
+            catch (AppwriteException e)
             {
-                Console.WriteLine($"Error: {e}");
+                Console.WriteLine($"Error: {e.Message}");
                 throw;
             }
 
@@ -239,9 +239,9 @@ namespace playground_for_dotnet
 
                 Console.WriteLine("Done");
             }
-            catch (Exception e)
+            catch (AppwriteException e)
             {
-                Console.WriteLine($"Error: {e}");
+                Console.WriteLine($"Error: {e.Message}");
                 throw;
             }
         }
