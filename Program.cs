@@ -29,19 +29,18 @@ namespace playground_for_dotnet
             /**
                 Create Database
             */
+
             try
             {
                 Console.WriteLine("Running Create Database API");
                 database = await databases.Create(
                     databaseId: ID.Unique(),
-                    name: "MoviesDB"
-                );
+                    name: "MoviesDB");
                 Console.WriteLine("Done");
             }
             catch (AppwriteException e)
             {
                 Console.WriteLine($"Error: {e.Message}");
-                throw;
             }
 
             /**
@@ -55,9 +54,7 @@ namespace playground_for_dotnet
                     databaseId: database.Id,
                     collectionId: ID.Unique(),
                     name: "Movies",
-                    permissions: new List<string> { Permission.Read(Role.Any()), Permission.Write(Role.Any()) }
-                );
-
+                    permissions: new List<string> { Permission.Read(Role.Any()), Permission.Write(Role.Any()) });
                 Console.WriteLine("Creating Attribute \"name\"");
 
                 await databases.CreateStringAttribute(
@@ -65,35 +62,30 @@ namespace playground_for_dotnet
                     collectionId: collection.Id,
                     key: "name",
                     size: 255,
-                    required: true
-                );
-
+                    required: true);
                 Console.WriteLine("Creating Attribute \"release_year\"");
 
                 await databases.CreateIntegerAttribute(
                     databaseId: database.Id,
                     collectionId: collection.Id,
                     key: "release_year",
-                    required: true
-                );
-
+                    required: true);
                 Console.WriteLine("Done");
             }
             catch (AppwriteException e)
             {
                 Console.WriteLine($"Error: {e.Message}");
-                throw;
             }
 
             /**
                 List Collections
             */
+
             try
             {
                 Console.WriteLine("Running List Collection API");
                 var collectionsList = await databases.ListCollections(
-                    databaseId: database.Id
-                );
+                    databaseId: database.Id);
                 foreach (var element in collectionsList.Collections)
                 {
                     Console.WriteLine($"- {element.Name}");
@@ -102,12 +94,12 @@ namespace playground_for_dotnet
             catch (AppwriteException e)
             {
                 Console.WriteLine($"Error: {e.Message}");
-                throw;
             }
 
             /**
                 Add Document
             */
+
             Movie movie1 = new Movie("Alien", 1979);
             Movie movie2 = new Movie("Equilibrium", 2002);
             try
@@ -117,32 +109,29 @@ namespace playground_for_dotnet
                     databaseId: database.Id,
                     collectionId: collection.Id,
                     documentId: ID.Unique(),
-                    data: movie1
-                );
+                    data: movie1);
                 await databases.CreateDocument(
                     databaseId: database.Id,
                     collectionId: collection.Id,
                     documentId: ID.Unique(),
-                    data: movie2
-                );
+                    data: movie2);
                 Console.WriteLine("Done");
             }
             catch (AppwriteException e)
             {
                 Console.WriteLine($"Error: {e.Message}");
-                throw;
             }
 
             /**
                 List Documents
             */
+
             try
             {
                 Console.WriteLine("Running List Documents API");
                 var documentsList = await databases.ListDocuments(
                     databaseId: database.Id,
-                    collectionId: collection.Id
-                );
+                    collectionId: collection.Id);
                 foreach (var element in documentsList.Documents)
                 {
                     var movie = JsonConvert.DeserializeObject<Movie>(JsonConvert.SerializeObject(element.Data));
@@ -152,7 +141,6 @@ namespace playground_for_dotnet
             catch (AppwriteException e)
             {
                 Console.WriteLine($"Error: {e.Message}");
-                throw;
             }
 
             /**
@@ -166,15 +154,12 @@ namespace playground_for_dotnet
                 bucket = await storage.CreateBucket(
                     bucketId: ID.Unique(),
                     name: "Files",
-                    permissions: new List<string> { Permission.Read(Role.Any()), Permission.Write(Role.Any()) }
-                );
-
+                    permissions: new List<string> { Permission.Read(Role.Any()), Permission.Write(Role.Any()) });
                 Console.WriteLine("Done");
             }
             catch (AppwriteException e)
             {
                 Console.WriteLine($"Error: {e.Message}");
-                throw;
             }
 
             /**
@@ -184,20 +169,16 @@ namespace playground_for_dotnet
             try
             {
                 Console.WriteLine("Running Create File API");
-
                 var file = await storage.CreateFile(
                     bucketId: bucket.Id,
                     fileId: ID.Unique(),
-                    file: InputFile.FromPath("[DIRECTORY_PATH]/appwrite-overview.png"),
-                    permissions: new List<string> { Permission.Read(Role.Any()), Permission.Write(Role.Any()) }
-                );
-
+                    file: InputFile.FromPath("appwrite-overview.png"),
+                    permissions: new List<string> { Permission.Read(Role.Any()), Permission.Write(Role.Any()) });
                 Console.WriteLine("Done");
             }
             catch (AppwriteException e)
             {
                 Console.WriteLine($"Error: {e.Message}");
-                throw;
             }
 
             /**
@@ -207,19 +188,14 @@ namespace playground_for_dotnet
             try
             {
                 Console.WriteLine("Running Create Function Execution API");
-
                 var execution = await functions.CreateExecution(
-                    functionId: "[FUNCTION_ID]"
-                );
-
+                    functionId: "[FUNCTION_ID]");
                 Console.WriteLine($"Response Message: {execution.Response}");
-
                 Console.WriteLine("Done");
             }
             catch (AppwriteException e)
             {
                 Console.WriteLine($"Error: {e.Message}");
-                throw;
             }
 
             /**
@@ -229,20 +205,16 @@ namespace playground_for_dotnet
             try
             {
                 Console.WriteLine("Running Create User API");
-
                 var user = await users.Create(
                     userId: ID.Unique(),
                     email: "test@example.com",
                     password: "test12345",
-                    name: "Walter O' Brian"
-                );
-
+                    name: "Walter O' Brian");
                 Console.WriteLine("Done");
             }
             catch (AppwriteException e)
             {
                 Console.WriteLine($"Error: {e.Message}");
-                throw;
             }
         }
     }
@@ -257,6 +229,5 @@ namespace playground_for_dotnet
         public string Name { get; }
         [JsonProperty("release_year")]
         public int ReleaseYear { get; }
-
     }
 }
