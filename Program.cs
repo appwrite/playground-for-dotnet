@@ -178,7 +178,7 @@ namespace playground_for_dotnet
                 var file = await storage.CreateFile(
                     bucketId: bucket.Id,
                     fileId: ID.Unique(),
-                    file: InputFile.FromPath("[DIRECTORY_PATH]/appwrite-overview.png"),
+                    file: InputFile.FromPath("appwrite-overview.png"),
                     permissions: new List<string> { Permission.Read(Role.Any()), Permission.Write(Role.Any()) });
                 Console.WriteLine("Done");
             }
