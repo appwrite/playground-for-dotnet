@@ -41,7 +41,6 @@ namespace playground_for_dotnet
             catch (AppwriteException e)
             {
                 Console.WriteLine($"Error: {e.Message}");
-                throw;
             }
 
             /**
@@ -76,7 +75,6 @@ namespace playground_for_dotnet
             catch (AppwriteException e)
             {
                 Console.WriteLine($"Error: {e.Message}");
-                throw;
             }
 
             /**
@@ -96,7 +94,6 @@ namespace playground_for_dotnet
             catch (AppwriteException e)
             {
                 Console.WriteLine($"Error: {e.Message}");
-                throw;
             }
 
             /**
@@ -123,7 +120,6 @@ namespace playground_for_dotnet
             catch (AppwriteException e)
             {
                 Console.WriteLine($"Error: {e.Message}");
-                throw;
             }
 
             /**
@@ -145,7 +141,6 @@ namespace playground_for_dotnet
             catch (AppwriteException e)
             {
                 Console.WriteLine($"Error: {e.Message}");
-                throw;
             }
 
             /**
@@ -165,7 +160,6 @@ namespace playground_for_dotnet
             catch (AppwriteException e)
             {
                 Console.WriteLine($"Error: {e.Message}");
-                throw;
             }
 
             /**
@@ -185,7 +179,6 @@ namespace playground_for_dotnet
             catch (AppwriteException e)
             {
                 Console.WriteLine($"Error: {e.Message}");
-                throw;
             }
 
             /**
@@ -203,7 +196,6 @@ namespace playground_for_dotnet
             catch (AppwriteException e)
             {
                 Console.WriteLine($"Error: {e.Message}");
-                throw;
             }
 
             /**
@@ -223,7 +215,6 @@ namespace playground_for_dotnet
             catch (AppwriteException e)
             {
                 Console.WriteLine($"Error: {e.Message}");
-                throw;
             }
         }
     }
@@ -238,6 +229,5 @@ namespace playground_for_dotnet
         public string Name { get; }
         [JsonProperty("release_year")]
         public int ReleaseYear { get; }
-
     }
 }
