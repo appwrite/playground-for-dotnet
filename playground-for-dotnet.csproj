@@ -5,8 +5,8 @@
     <RootNamespace>playground_for_dotnet</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Appwrite" Version="0.4.2" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Appwrite" Version="0.27.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
   <ItemGroup>
     <None Update="appwrite-overview.png">
